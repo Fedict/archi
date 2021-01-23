@@ -27,8 +27,10 @@ package be.bosa.dt.archi.sources;
 
 import be.bosa.dt.archi.dao.DaoContent;
 import jakarta.json.Json;
+import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
+import jakarta.json.JsonValue;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -69,6 +71,17 @@ public class Confluence extends Source {
 		try (	InputStream is = url.openStream();
 				JsonReader reader = Json.createReader(is)) {
 			JsonObject obj = reader.readObject();
+			JsonArray items = obj.get("results").asJsonArray();
+			LOG.log(Level.FINE, "Results {0}", items.size());
+			
+			items.forEach(i -> {
+				DaoContent content = new DaoContent(); 
+				JsonValue title = i.asJsonObject().get("title");
+				if (title != null) {
+					content.setTitle(title.toString());
+				}
+				lst.add(content);
+			});
 		}
 		return lst;
 	}

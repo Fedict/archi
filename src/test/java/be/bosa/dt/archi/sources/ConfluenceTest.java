@@ -28,7 +28,6 @@ package be.bosa.dt.archi.sources;
 import be.bosa.dt.archi.dao.DaoContent;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
@@ -61,8 +60,7 @@ public class ConfluenceTest {
 
 	@Test
 	public void noResults() throws IOException {
-		stubFor(get(urlEqualTo("/wiki/rest/api/content/search"))
-				.withQueryParam("cql=label", equalTo("none"))
+		stubFor(get(urlEqualTo("/wiki/rest/api/content/search?cql=label=none"))
 				.willReturn(aResponse()
 					.withStatus(200)
 					.withHeader("Content-Type", "application/json")
@@ -72,5 +70,19 @@ public class ConfluenceTest {
 		List<DaoContent> res = src.getContent("none");
 		
 		assertTrue(res.isEmpty());
+	}
+
+	@Test
+	public void nineResults() throws IOException {
+		stubFor(get(urlEqualTo("/wiki/rest/api/content/search?cql=label=architect"))
+				.willReturn(aResponse()
+					.withStatus(200)
+					.withHeader("Content-Type", "application/json")
+					.withBody(getInput("found.json"))));
+		
+		Source src = new Confluence("http://localhost:8080");
+		List<DaoContent> res = src.getContent("architect");
+		
+		assertTrue(res.size() == 9);
 	}
 }
