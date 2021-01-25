@@ -27,6 +27,11 @@ package be.bosa.dt.archi.sources;
 
 import be.bosa.dt.archi.dao.DaoContent;
 import java.io.IOException;
+import java.net.Authenticator;
+import java.net.CookieManager;
+import java.net.PasswordAuthentication;
+import java.net.http.HttpClient;
+import java.net.http.HttpClient.Redirect;
 import java.util.List;
 
 /**
@@ -36,8 +41,11 @@ import java.util.List;
  */
 public abstract class Source {
 	private final String server;
+	private final String user;
+	private final String pass;
+	
 
-	public String getServer() {
+	protected String getServer() {
 		return server;
 	}
 
@@ -51,11 +59,36 @@ public abstract class Source {
 	public abstract List<DaoContent> getContent(String param) throws IOException;
 
 	/**
-	 * Constructor
+	 * Get HTTP client, usinf basic authentication when user and pass are set
 	 * 
-	 * @param server 
+	 * @return 
 	 */
-	public Source(String server) {
+	protected HttpClient getHttpClient() {
+		HttpClient.Builder builder = HttpClient.newBuilder()
+			.cookieHandler(new CookieManager())
+			.followRedirects(Redirect.NORMAL)
+			.version(HttpClient.Version.HTTP_1_1);
+		
+		if (user != null && pass != null) {
+			builder.authenticator(
+				new Authenticator() {
+					@Override
+					protected PasswordAuthentication getPasswordAuthentication() {
+						return new PasswordAuthentication(user, pass.toCharArray());
+					}
+				});
+			}
+        return builder.build();
+	}
+
+	/**
+	 * Constructor
+	 * @param server
+	 * @param user
+	 */
+	public Source(String server, String user, String pass) {
 		this.server = server;
+		this.user = user;
+		this.pass = pass;
 	}
 }

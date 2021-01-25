@@ -26,12 +26,17 @@
 package be.bosa.dt.archi.target;
 
 import be.bosa.dt.archi.dao.DaoContent;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.namespace.QName;
+
 import org.opengroup.xsd.archimate._3.ApplicationComponent;
 import org.opengroup.xsd.archimate._3.ElementType;
 import org.opengroup.xsd.archimate._3.ElementsType;
@@ -76,24 +81,29 @@ public class ArchiXML {
 	 * 
 	 * @param contents list of content items
 	 * @throws IOException 
+	 * @throws JAXBException 
 	 */
 	public void write(List<DaoContent> contents) throws IOException, JAXBException {
-		ModelType root = new ModelType();
+		ModelType model = new ModelType();
 		
 		LangStringType lt = new LangStringType();
 		lt.setValue("Demo");
 		lt.setValue("en");
-		root.getNameGroup().add(lt);
+		model.getNameGroup().add(lt);
 
 		ElementsType els = new ElementsType();
 		for(DaoContent c: contents) {
 			els.getElement().add(createComponent(c));
 		}
-		root.setElements(els);
+		model.setElements(els);
 		
 		JAXBContext context = JAXBContext.newInstance(ModelType.class);
-		Marshaller mar= context.createMarshaller();
+		Marshaller mar = context.createMarshaller();
 		mar.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+		
+		QName qName = new QName("org.opengroup.xsd.archimate._3.ModelType", "model");
+		JAXBElement<ModelType> root = new JAXBElement<>(qName, ModelType.class, model);
+
 		mar.marshal(root, os);
 	}
 	

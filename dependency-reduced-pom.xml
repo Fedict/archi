@@ -7,6 +7,26 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>jaxb2-maven-plugin</artifactId>
+        <version>2.5.0</version>
+        <executions>
+          <execution>
+            <id>xjc</id>
+            <goals>
+              <goal>xjc</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <sources>
+            <source>src/main/resources/archimate3_Model.xsd</source>
+            <source>src/main/resources/archimate3_View.xsd</source>
+          </sources>
+          <clearOutputDir>false</clearOutputDir>
+        </configuration>
+      </plugin>
+      <plugin>
         <artifactId>maven-jar-plugin</artifactId>
         <version>3.2.0</version>
         <configuration>

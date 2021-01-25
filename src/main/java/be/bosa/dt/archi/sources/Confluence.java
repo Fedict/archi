@@ -34,9 +34,14 @@ import jakarta.json.JsonReader;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.StringReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 
-import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -65,30 +70,41 @@ public class Confluence extends Source {
 	 */
 	@Override
 	public List<DaoContent> getContent(String label) throws IOException {
+		JsonReader reader;
+
+		try {
+			URI uri = new URI(getServer() + API_PATH + SEARCH + "?" + CQL + label);
+			LOG.log(Level.INFO, "Getting data from {0}", uri);
+
+			HttpClient client = getHttpClient();
+			HttpRequest req = HttpRequest.newBuilder().GET().uri(uri).build();
+			HttpResponse<String> resp = client.send(req, BodyHandlers.ofString());
+
+			System.err.println(resp.body());
+			reader = Json.createReader(new StringReader(resp.toString()));
+		} catch (InterruptedException | URISyntaxException ex) {
+			throw new IOException(ex);
+		}
+		
+		JsonObject obj = reader.readObject();
+		JsonArray items = obj.get("results").asJsonArray();
+		LOG.log(Level.FINE, "Results {0}", items.size());
+		
 		List<DaoContent> lst = new ArrayList<>();
 
-		URL url = new URL(getServer() + API_PATH + SEARCH + "?" + CQL + label);
-		LOG.log(Level.INFO, "Getting data from {0}", url);
-
-		try (	InputStream is = url.openStream();
-				JsonReader reader = Json.createReader(is)) {
-			JsonObject obj = reader.readObject();
-			JsonArray items = obj.get("results").asJsonArray();
-			LOG.log(Level.FINE, "Results {0}", items.size());
-			
-			items.forEach(i -> {
-				DaoContent content = new DaoContent(); 
-				JsonValue id = i.asJsonObject().get("id");
-				if (id != null) {
-					content.setId("id-" + ((JsonString) id).getString());
-				}
-				JsonValue title = i.asJsonObject().get("title");
-				if (title != null) {
-					content.setTitle(((JsonString) title).getString());
-				}
-				lst.add(content);
-			});
+		for(JsonValue i: items) {
+			DaoContent content = new DaoContent(); 
+			JsonValue id = i.asJsonObject().get("id");
+			if (id != null) {
+				content.setId("id-" + ((JsonString) id).getString());
+			}
+			JsonValue title = i.asJsonObject().get("title");
+			if (title != null) {
+				content.setTitle(((JsonString) title).getString());
+			}
+			lst.add(content);
 		}
+
 		return lst;
 	}
 
@@ -97,7 +113,7 @@ public class Confluence extends Source {
 	 * 
 	 * @param server 
 	 */
-	public Confluence(String server) {
-		super(server);
+	public Confluence(String server, String user, String pass) {
+		super(server, user, pass);
 	}
 }

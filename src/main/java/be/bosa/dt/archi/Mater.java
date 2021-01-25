@@ -48,11 +48,17 @@ import picocli.CommandLine.Option;
 @Command(name = "checksum", mixinStandardHelpOptions = true, version = "1.0",
          description = "Extracts (meta)data from wiki etc and convert it to Archimate.")
 public class Mater implements Callable<Integer> {
-	@Option(names = {"-s", "--source"}, description = "confluence", defaultValue="confluence")
+	@Option(names = {"-s", "--source"}, description = "source type", defaultValue="confluence")
     private String src;
 
-	@Option(names = {"-u", "--url"}, description = "link to the source", defaultValue="http://localhost")
+	@Option(names = {"-l", "--location"}, description = "location of the data source", defaultValue="http://localhost")
     private String url;
+
+	@Option(names = {"-u", "--user"}, description = "user name")
+    private String user;
+
+	@Option(names = {"-p", "--password"}, description = "password ")
+    private String pass;
 
 	@Option(names = {"-t", "--type"}, description = "info type", required = true)
     private String type;
@@ -60,20 +66,19 @@ public class Mater implements Callable<Integer> {
 	@Option(names = {"-f", "--file"}, description = "write result to file")
     private Path path;
 
-	@Option(names = "--help", usageHelp = true, description = "display this help and exit")
-    boolean help;
+//	@Option(names = "--help", usageHelp = true, description = "display this help and exit")
+//    boolean help;
 
 	@Override
 	public Integer call() throws Exception {
 		Source source = null;
 
 		switch(src) {
-			case "confluence": source = new Confluence(url);
+			case "confluence": source = new Confluence(url, user, pass);
 		}
 		
 		List<DaoContent> content = source.getContent(type);
 		if (content.isEmpty()) {
-			
 			return -1;
 		}
 

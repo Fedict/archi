@@ -66,21 +66,21 @@ public class ConfluenceTest {
 					.withHeader("Content-Type", "application/json")
 					.withBody(getInput("notfound.json"))));
 		
-		Source src = new Confluence("http://localhost:8080");
+		Source src = new Confluence("http://localhost:8080", null, null);
 		List<DaoContent> res = src.getContent("none");
 		
 		assertTrue(res.isEmpty());
 	}
 
 	@Test
-	public void nineResults() throws IOException {
+	public void nineResultsWithAuth() throws IOException {
 		stubFor(get(urlEqualTo("/wiki/rest/api/content/search?cql=label=architect"))
 				.willReturn(aResponse()
 					.withStatus(200)
 					.withHeader("Content-Type", "application/json")
 					.withBody(getInput("found.json"))));
 		
-		Source src = new Confluence("http://localhost:8080");
+		Source src = new Confluence("http://localhost:8080", null, null);
 		List<DaoContent> res = src.getContent("architect");
 		
 		assertTrue(res.size() == 9);
@@ -94,7 +94,7 @@ public class ConfluenceTest {
 					.withHeader("Content-Type", "application/json")
 					.withBody(getInput("found.json"))));
 		
-		Source src = new Confluence("http://localhost:8080");
+		Source src = new Confluence("http://localhost:8080", null, null);
 		List<DaoContent> res = src.getContent("architect");
 
 		assertTrue(res.stream().anyMatch(r -> r.getId().equals("id-" + "227210374")));
