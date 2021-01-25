@@ -54,14 +54,14 @@ public class Mater implements Callable<Integer> {
 	@Option(names = {"-u", "--url"}, description = "link to the source", defaultValue="http://localhost")
     private String url;
 
-	@Option(names = {"-t", "--type"}, description = "info type")
+	@Option(names = {"-t", "--type"}, description = "info type", required = true)
     private String type;
 
 	@Option(names = {"-f", "--file"}, description = "write result to file")
     private Path path;
-	
-//	@Option(names = { "-h", "--help" }, usageHelp = true, description = "display help message")
-  //  private boolean needHelp = false;
+
+	@Option(names = "--help", usageHelp = true, description = "display this help and exit")
+    boolean help;
 
 	@Override
 	public Integer call() throws Exception {
@@ -70,11 +70,17 @@ public class Mater implements Callable<Integer> {
 		switch(src) {
 			case "confluence": source = new Confluence(url);
 		}
+		
 		List<DaoContent> content = source.getContent(type);
+		if (content.isEmpty()) {
+			
+			return -1;
+		}
 
 		OutputStream os = (path != null) 
 			? Files.newOutputStream(path, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING) 
 			: System.out;
+
 		ArchiXML xml = new ArchiXML(os);
 		xml.write(content);
 
@@ -85,5 +91,4 @@ public class Mater implements Callable<Integer> {
 		int exitCode = new CommandLine(new Mater()).execute(args);
         System.exit(exitCode);
 	} 
-
 }

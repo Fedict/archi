@@ -28,9 +28,16 @@ package be.bosa.dt.archi.target;
 import be.bosa.dt.archi.dao.DaoContent;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.List;
-import org.xmlbeam.XBProjector;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import org.opengroup.xsd.archimate._3.ApplicationComponent;
+import org.opengroup.xsd.archimate._3.ElementType;
+import org.opengroup.xsd.archimate._3.ElementsType;
+import org.opengroup.xsd.archimate._3.LangStringType;
+import org.opengroup.xsd.archimate._3.ModelType;
+import org.opengroup.xsd.archimate._3.PreservedLangStringType;
 
 /**
  * Writes the content to an Archi XML file
@@ -39,28 +46,55 @@ import org.xmlbeam.XBProjector;
  */
 public class ArchiXML {
 	private final OutputStream os;
-	private final XBProjector projector;
-
-	public void write(List<DaoContent> contents) throws IOException {
-		ArchiModel m = projector.io().fromURLAnnotation(ArchiModel.class);
-		m.setName("Demo");
-		m.setDescription("Generated");
+	
+	/**
+	 * Create an 'element' node from content
+	 * 
+	 * @param content content item
+	 * @return 
+	 */
+	private ElementType createComponent(DaoContent content) {
+		ApplicationComponent component = new ApplicationComponent();
+		component.setIdentifier(content.getId());
 		
-		List<ArchiModelElement> els = new ArrayList<>();
+		LangStringType lt = new LangStringType();
+		lt.setValue(content.getTitle());
+		lt.setValue("en");
+		component.getNameGroup().add(lt);
+
+		PreservedLangStringType plt = new PreservedLangStringType();
+		plt.setValue(content.getDescription());
+		plt.setValue("en");	
+		component.getDocumentation().add(plt);
+		
+		return component;
+	}
+
+	
+	/**
+	 * Write a list of content items to XML
+	 * 
+	 * @param contents list of content items
+	 * @throws IOException 
+	 */
+	public void write(List<DaoContent> contents) throws IOException, JAXBException {
+		ModelType root = new ModelType();
+		
+		LangStringType lt = new LangStringType();
+		lt.setValue("Demo");
+		lt.setValue("en");
+		root.getNameGroup().add(lt);
+
+		ElementsType els = new ElementsType();
 		for(DaoContent c: contents) {
-			ArchiModelElement el = projector.projectEmptyElement("element", ArchiModelElement.class);
-			el.setId(c.getId());
-			
-			ArchiModelName n = projector.projectEmptyElement("name", ArchiModelName.class);
-			n.setName(c.getTitle());
-			n.setLang("en");
-
-			el.setName(n);
-
-			els.add(el);
+			els.getElement().add(createComponent(c));
 		}
-		m.setElements(els);
-		projector.io().stream(os).write(m);
+		root.setElements(els);
+		
+		JAXBContext context = JAXBContext.newInstance(ModelType.class);
+		Marshaller mar= context.createMarshaller();
+		mar.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+		mar.marshal(root, os);
 	}
 	
 	/**
@@ -70,6 +104,5 @@ public class ArchiXML {
 	 */
 	public ArchiXML(OutputStream os) {
 		this.os = os;
-		projector = new XBProjector();
 	}
 }

@@ -32,9 +32,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import javax.xml.bind.JAXBException;
 
 import org.junit.Before;
-
 import org.junit.Test;
 
 /**
@@ -59,7 +59,7 @@ public class ArchiModelTest {
 	}
 
 	@Test
-	public void toXml() throws IOException {
+	public void toXml() throws IOException, JAXBException {
 		OutputStream os = new ByteArrayOutputStream();
 		ArchiXML model = new ArchiXML(os);
 		model.write(res);
