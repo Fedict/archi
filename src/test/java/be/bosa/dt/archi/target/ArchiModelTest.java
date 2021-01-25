@@ -23,62 +23,47 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package be.bosa.dt.archi.dao;
+package be.bosa.dt.archi.target;
 
-import java.net.URL;
-import java.time.LocalDate;
+import be.bosa.dt.archi.dao.DaoContent;
+import java.io.ByteArrayOutputStream;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.Before;
+
+import org.junit.Test;
 
 /**
- * Helper object to exchange data / create an abstraction layer between source and target (Archi)
- * 
- * Could be replaced by a record in JDK 15/16
- * 
+ *
  * @author Bart.Hanssens
  */
-public class DaoContent {
-	private String id;
-	private String title;
-	private String description;
-	private URL link;
-	private LocalDate date;
-
-	public String getId() {
-		return id;
+public class ArchiModelTest {
+	private List<DaoContent> res; 
+		
+	@Before
+	public void before() {
+		res = new ArrayList<>();
+		DaoContent c1 = new DaoContent();
+		c1.setId("id-123");
+		c1.setTitle("Dummy title 1");
+		res.add(c1);
+		
+		DaoContent c2 = new DaoContent();
+		c2.setId("id-456");
+		c2.setTitle("Dummy title 2");
+		res.add(c2);
 	}
 
-	public void setId(String id) {
-		this.id = id;
-	}
+	@Test
+	public void toXml() throws IOException {
+		OutputStream os = new ByteArrayOutputStream();
+		ArchiXML model = new ArchiXML(os);
+		model.write(res);
 
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public URL getLink() {
-		return link;
-	}
-
-	public void setLink(URL link) {
-		this.link = link;
-	}
-
-	public LocalDate getDate() {
-		return date;
-	}
-
-	public void setDate(LocalDate date) {
-		this.date = date;
+		System.err.println(os.toString());
 	}
 }

@@ -23,62 +23,53 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package be.bosa.dt.archi.dao;
+package be.bosa.dt.archi.target;
 
-import java.net.URL;
-import java.time.LocalDate;
+import be.bosa.dt.archi.dao.DaoContent;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import org.xmlbeam.XBProjector;
 
 /**
- * Helper object to exchange data / create an abstraction layer between source and target (Archi)
+ * Writes the content to an Archi XML file
  * 
- * Could be replaced by a record in JDK 15/16
- * 
- * @author Bart.Hanssens
+ * @author Bart Hanssens
  */
-public class DaoContent {
-	private String id;
-	private String title;
-	private String description;
-	private URL link;
-	private LocalDate date;
+public class ArchiXML {
+	private final OutputStream os;
+	private final XBProjector projector;
 
-	public String getId() {
-		return id;
+	public void write(List<DaoContent> contents) throws IOException {
+		ArchiModel m = projector.io().fromURLAnnotation(ArchiModel.class);
+		m.setName("Demo");
+		m.setDescription("Generated");
+		
+		List<ArchiModelElement> els = new ArrayList<>();
+		for(DaoContent c: contents) {
+			ArchiModelElement el = projector.projectEmptyElement("element", ArchiModelElement.class);
+			el.setId(c.getId());
+			
+			ArchiModelName n = projector.projectEmptyElement("name", ArchiModelName.class);
+			n.setName(c.getTitle());
+			n.setLang("en");
+
+			el.setName(n);
+
+			els.add(el);
+		}
+		m.setElements(els);
+		projector.io().stream(os).write(m);
 	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public URL getLink() {
-		return link;
-	}
-
-	public void setLink(URL link) {
-		this.link = link;
-	}
-
-	public LocalDate getDate() {
-		return date;
-	}
-
-	public void setDate(LocalDate date) {
-		this.date = date;
+	
+	/**
+	 * Constructor
+	 * 
+	 * @param os 
+	 */
+	public ArchiXML(OutputStream os) {
+		this.os = os;
+		projector = new XBProjector();
 	}
 }

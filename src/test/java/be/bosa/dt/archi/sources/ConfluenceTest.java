@@ -85,4 +85,18 @@ public class ConfluenceTest {
 		
 		assertTrue(res.size() == 9);
 	}
+	
+	@Test
+	public void checkID() throws IOException {
+		stubFor(get(urlEqualTo("/wiki/rest/api/content/search?cql=label=architect"))
+				.willReturn(aResponse()
+					.withStatus(200)
+					.withHeader("Content-Type", "application/json")
+					.withBody(getInput("found.json"))));
+		
+		Source src = new Confluence("http://localhost:8080");
+		List<DaoContent> res = src.getContent("architect");
+
+		assertTrue(res.stream().anyMatch(r -> r.getId().equals("id-" + "227210374")));
+	}
 }

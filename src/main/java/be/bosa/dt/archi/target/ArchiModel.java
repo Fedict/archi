@@ -23,12 +23,27 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package be.bosa.dt.archi.targets;
+package be.bosa.dt.archi.target;
+
+import java.util.List;
+import org.xmlbeam.annotation.XBDocURL;
+import org.xmlbeam.annotation.XBValue;
+import org.xmlbeam.annotation.XBWrite;
 
 /**
- *
- * @author Bart.Hanssens
+ * Archi XML model.
+ * Helper interface for XMLBeam library
+ * 
+ * @author Bart Hanssens
  */
-public class ArchiXML {
+@XBDocURL("resource://archimodel.xml")
+public interface ArchiModel {	
+	@XBWrite("/model/name")
+    void setName(String txt);
 	
+	@XBWrite("/model/documentation")
+    void setDescription(String txt);
+	
+	@XBWrite("/model/elements")
+	void setElements(@XBValue List<ArchiModelElement> els);
 }

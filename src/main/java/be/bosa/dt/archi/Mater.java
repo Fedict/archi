@@ -28,7 +28,11 @@ package be.bosa.dt.archi;
 import be.bosa.dt.archi.dao.DaoContent;
 import be.bosa.dt.archi.sources.Confluence;
 import be.bosa.dt.archi.sources.Source;
-import java.io.File;
+import be.bosa.dt.archi.target.ArchiXML;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.concurrent.Callable;
 import picocli.CommandLine;
@@ -52,7 +56,7 @@ public class Mater implements Callable<Integer> {
     private String type;
 
 	@Option(names = {"-f", "--file"}, description = "write result to file")
-    private File file;
+    private Path path;
 	
 	@Option(names = { "-h", "--help" }, usageHelp = true, description = "display help message")
     private boolean needHelp = false;
@@ -66,9 +70,12 @@ public class Mater implements Callable<Integer> {
 		}
 		List<DaoContent> content = source.getContent(type);
 
-		if (file != null) {
-			
-		}
+		OutputStream os = (path != null) 
+			? Files.newOutputStream(path, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING) 
+			: System.out;
+		ArchiXML xml = new ArchiXML(os);
+		xml.write(content);
+
 		return 0;
 	}
 	
