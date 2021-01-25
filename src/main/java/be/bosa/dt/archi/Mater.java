@@ -29,12 +29,14 @@ import be.bosa.dt.archi.dao.DaoContent;
 import be.bosa.dt.archi.sources.Confluence;
 import be.bosa.dt.archi.sources.Source;
 import be.bosa.dt.archi.target.ArchiXML;
+
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.concurrent.Callable;
+
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -58,8 +60,8 @@ public class Mater implements Callable<Integer> {
 	@Option(names = {"-f", "--file"}, description = "write result to file")
     private Path path;
 	
-	@Option(names = { "-h", "--help" }, usageHelp = true, description = "display help message")
-    private boolean needHelp = false;
+//	@Option(names = { "-h", "--help" }, usageHelp = true, description = "display help message")
+  //  private boolean needHelp = false;
 
 	@Override
 	public Integer call() throws Exception {
