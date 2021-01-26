@@ -48,39 +48,37 @@ import picocli.CommandLine.Option;
 @Command(name = "checksum", mixinStandardHelpOptions = true, version = "1.0",
          description = "Extracts (meta)data from wiki etc and convert it to Archimate.")
 public class Mater implements Callable<Integer> {
+	/*
 	@Option(names = {"-s", "--source"}, description = "source type", defaultValue="confluence")
     private String src;
-
-	@Option(names = {"-l", "--location"}, description = "location of the data source", defaultValue="http://localhost")
+	*/
+	@Option(names = {"-l", "--location"}, description = "Location of the data source", defaultValue="http://localhost")
     private String url;
 
-	@Option(names = {"-u", "--user"}, description = "user name")
+	@Option(names = {"-u", "--user"}, description = "User name for the data source")
     private String user;
 
-	@Option(names = {"-p", "--password"}, description = "password ")
+	@Option(names = {"-p", "--password"}, description = "Password for the data source")
     private String pass;
 
-	@Option(names = {"-t", "--type"}, description = "info type", required = true)
+	@Option(names = {"-t", "--type"}, description = "Tag / info type", required = true)
     private String type;
 
-	@Option(names = {"-f", "--file"}, description = "write result to file")
+	@Option(names = {"-f", "--file"}, description = "Write result to file")
     private Path path;
 
 	@Override
 	public Integer call() throws Exception {
-		Source source = null;
+		Source source = new Confluence(url, user, pass);
 
-		switch(src) {
-			case "confluence": source = new Confluence(url, user, pass);
-		}
-		
 		List<DaoContent> content = source.getContent(type);
 		if (content.isEmpty()) {
 			return -1;
 		}
 
 		OutputStream os = (path != null) 
-			? Files.newOutputStream(path, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING) 
+			? Files.newOutputStream(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, 
+																	StandardOpenOption.TRUNCATE_EXISTING) 
 			: System.out;
 
 		ArchiXML xml = new ArchiXML(os);

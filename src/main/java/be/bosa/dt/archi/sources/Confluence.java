@@ -77,7 +77,7 @@ public class Confluence extends Source {
 		
 		JsonObject obj = reader.readObject();
 		JsonArray items = obj.get("results").asJsonArray();
-		LOG.log(Level.FINE, "Results {0}", items.size());
+		LOG.log(Level.INFO, "Results {0}", items.size());
 		
 		List<DaoContent> lst = new ArrayList<>();
 

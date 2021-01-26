@@ -35,13 +35,13 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import javax.xml.namespace.QName;
 
 import org.opengroup.xsd.archimate._3.ApplicationComponent;
 import org.opengroup.xsd.archimate._3.ElementType;
 import org.opengroup.xsd.archimate._3.ElementsType;
 import org.opengroup.xsd.archimate._3.LangStringType;
 import org.opengroup.xsd.archimate._3.ModelType;
+import org.opengroup.xsd.archimate._3.ObjectFactory;
 import org.opengroup.xsd.archimate._3.PreservedLangStringType;
 
 /**
@@ -85,7 +85,9 @@ public class ArchiXML {
 	 */
 	public void write(List<DaoContent> contents) throws IOException, JAXBException {
 		ModelType model = new ModelType();
-		
+		model.setIdentifier("id-gen-mater");
+		model.setVersion("1.0");
+
 		LangStringType lt = new LangStringType();
 		lt.setValue("Demo from confluence");
 		lt.setLang("en");
@@ -97,13 +99,13 @@ public class ArchiXML {
 		}
 		model.setElements(els);
 		
+		// workaround for missing XmlRootElement annotation
+		ObjectFactory factory = new ObjectFactory();
+		JAXBElement<ModelType> root = factory.createModel(model);
+			
 		JAXBContext context = JAXBContext.newInstance(ModelType.class);
 		Marshaller mar = context.createMarshaller();
 		mar.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-		
-		QName qName = new QName("org.opengroup.xsd.archimate._3.ModelType", "model");
-		JAXBElement<ModelType> root = new JAXBElement<>(qName, ModelType.class, model);
-
 		mar.marshal(root, os);
 	}
 	
@@ -114,5 +116,8 @@ public class ArchiXML {
 	 */
 	public ArchiXML(OutputStream os) {
 		this.os = os;
+		
+		// prevent "illegal reflective access" JAXB warning
+		System.setProperty("com.sun.xml.bind.v2.bytecode.ClassTailor.noOptimize", "true");
 	}
 }
