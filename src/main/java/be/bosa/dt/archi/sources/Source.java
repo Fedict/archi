@@ -26,13 +26,19 @@
 package be.bosa.dt.archi.sources;
 
 import be.bosa.dt.archi.dao.DaoContent;
+
 import java.io.IOException;
-import java.net.Authenticator;
 import java.net.CookieManager;
-import java.net.PasswordAuthentication;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Redirect;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.Base64;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Data source
@@ -40,6 +46,9 @@ import java.util.List;
  * @author Bart Hanssens
  */
 public abstract class Source {
+	private final static Logger LOG = Logger.getLogger(Source.class.getName());
+
+	private final HttpClient client;
 	private final String server;
 	private final String user;
 	private final String pass;
@@ -59,26 +68,33 @@ public abstract class Source {
 	public abstract List<DaoContent> getContent(String param) throws IOException;
 
 	/**
-	 * Get HTTP client, usinf basic authentication when user and pass are set
+	 * Make HTTP GET request and return the response body as string.
+	 * Basic Authentication headers are sent if user name and password are not null
 	 * 
-	 * @return 
+	 * @param url url to GET
+	 * @return string of response body
+	 * @throws URISyntaxException
+	 * @throws IOException 
+	 * @throws InterruptedException 
 	 */
-	protected HttpClient getHttpClient() {
-		HttpClient.Builder builder = HttpClient.newBuilder()
-			.cookieHandler(new CookieManager())
-			.followRedirects(Redirect.NORMAL)
-			.version(HttpClient.Version.HTTP_1_1);
-		
+	protected String makeHttpGET(String url) throws URISyntaxException, IOException, InterruptedException {
+		URI uri = new URI(url);
+		LOG.log(Level.INFO, "GET data from {0}", uri);
+	
+		HttpRequest.Builder builder = HttpRequest.newBuilder().GET().uri(uri);
+
+		// Adding Basic Authenticator to the basic JDK 11 HttpClient does not seem to work:
+		// header is only sent when promted for by the server, not proactively.
 		if (user != null && pass != null) {
-			builder.authenticator(
-				new Authenticator() {
-					@Override
-					protected PasswordAuthentication getPasswordAuthentication() {
-						return new PasswordAuthentication(user, pass.toCharArray());
-					}
-				});
-			}
-        return builder.build();
+			String encoded = Base64.getEncoder().encodeToString((user + ":" + pass).getBytes());
+			builder.setHeader("Authorization", "Basic " + encoded);
+		}
+	
+		HttpResponse<String> resp = client.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+		if (resp.statusCode() != 200) {
+			LOG.log(Level.SEVERE, "GET returned status {0}", resp.statusCode());
+		}
+		return resp.body();
 	}
 
 	/**
@@ -90,5 +106,10 @@ public abstract class Source {
 		this.server = server;
 		this.user = user;
 		this.pass = pass;
+		this.client = HttpClient.newBuilder()
+							.cookieHandler(new CookieManager())
+							.followRedirects(Redirect.NORMAL)
+							.version(HttpClient.Version.HTTP_1_1)
+							.build();
 	}
 }

@@ -66,9 +66,6 @@ public class Mater implements Callable<Integer> {
 	@Option(names = {"-f", "--file"}, description = "write result to file")
     private Path path;
 
-//	@Option(names = "--help", usageHelp = true, description = "display this help and exit")
-//    boolean help;
-
 	@Override
 	public Integer call() throws Exception {
 		Source source = null;

@@ -33,15 +33,11 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
+
 import java.io.IOException;
 import java.io.StringReader;
-import java.net.URI;
 import java.net.URISyntaxException;
 
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -73,15 +69,8 @@ public class Confluence extends Source {
 		JsonReader reader;
 
 		try {
-			URI uri = new URI(getServer() + API_PATH + SEARCH + "?" + CQL + label);
-			LOG.log(Level.INFO, "Getting data from {0}", uri);
-
-			HttpClient client = getHttpClient();
-			HttpRequest req = HttpRequest.newBuilder().GET().uri(uri).build();
-			HttpResponse<String> resp = client.send(req, BodyHandlers.ofString());
-
-			System.err.println(resp.body());
-			reader = Json.createReader(new StringReader(resp.toString()));
+			String resp = makeHttpGET(getServer() + API_PATH + SEARCH + "?" + CQL + label + "&" + EXPAND);
+			reader = Json.createReader(new StringReader(resp));
 		} catch (InterruptedException | URISyntaxException ex) {
 			throw new IOException(ex);
 		}

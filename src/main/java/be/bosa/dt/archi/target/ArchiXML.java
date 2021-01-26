@@ -64,12 +64,12 @@ public class ArchiXML {
 		
 		LangStringType lt = new LangStringType();
 		lt.setValue(content.getTitle());
-		lt.setValue("en");
+		lt.setLang("en");
 		component.getNameGroup().add(lt);
 
 		PreservedLangStringType plt = new PreservedLangStringType();
 		plt.setValue(content.getDescription());
-		plt.setValue("en");	
+		plt.setLang("en");	
 		component.getDocumentation().add(plt);
 		
 		return component;
@@ -87,8 +87,8 @@ public class ArchiXML {
 		ModelType model = new ModelType();
 		
 		LangStringType lt = new LangStringType();
-		lt.setValue("Demo");
-		lt.setValue("en");
+		lt.setValue("Demo from confluence");
+		lt.setLang("en");
 		model.getNameGroup().add(lt);
 
 		ElementsType els = new ElementsType();

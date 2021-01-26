@@ -30,7 +30,7 @@ import be.bosa.dt.archi.dao.DaoContent;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
@@ -59,43 +59,46 @@ public class ConfluenceTest {
 	}
 
 	@Test
-	public void noResults() throws IOException {
-		stubFor(get(urlEqualTo("/wiki/rest/api/content/search?cql=label=none"))
+	public void noResultsWithAuth() throws IOException {
+		stubFor(get(urlMatching("/wiki/rest/api/content/search\\?cql=label=none.*"))
+				.withBasicAuth("user", "pass")
 				.willReturn(aResponse()
 					.withStatus(200)
 					.withHeader("Content-Type", "application/json")
 					.withBody(getInput("notfound.json"))));
 		
-		Source src = new Confluence("http://localhost:8080", null, null);
+		Source src = new Confluence("http://localhost:8080", "user", "pass");
 		List<DaoContent> res = src.getContent("none");
-		
+
 		assertTrue(res.isEmpty());
 	}
 
 	@Test
 	public void nineResultsWithAuth() throws IOException {
-		stubFor(get(urlEqualTo("/wiki/rest/api/content/search?cql=label=architect"))
+		stubFor(get(urlMatching("/wiki/rest/api/content/search\\?cql=label=architecture.*"))
+				.withBasicAuth("user", "pass")
 				.willReturn(aResponse()
 					.withStatus(200)
 					.withHeader("Content-Type", "application/json")
 					.withBody(getInput("found.json"))));
 		
-		Source src = new Confluence("http://localhost:8080", null, null);
-		List<DaoContent> res = src.getContent("architect");
+		Source src = new Confluence("http://localhost:8080", "user", "pass");
+		List<DaoContent> res = src.getContent("architecture");
 		
 		assertTrue(res.size() == 9);
 	}
 	
 	@Test
 	public void checkID() throws IOException {
-		stubFor(get(urlEqualTo("/wiki/rest/api/content/search?cql=label=architect"))
+		stubFor(get(urlMatching("/wiki/rest/api/content/search\\?cql=label=architecture.*"))
+				.withBasicAuth("user", "pass")
 				.willReturn(aResponse()
 					.withStatus(200)
 					.withHeader("Content-Type", "application/json")
 					.withBody(getInput("found.json"))));
 		
-		Source src = new Confluence("http://localhost:8080", null, null);
-		List<DaoContent> res = src.getContent("architect");
+		Source src = new Confluence("http://localhost:8080", "user", "pass");
+		List<DaoContent> res = src.getContent("architecture");
 
 		assertTrue(res.stream().anyMatch(r -> r.getId().equals("id-" + "227210374")));
 	}
