@@ -83,14 +83,26 @@ public class Confluence extends Source {
 
 		for(JsonValue i: items) {
 			DaoContent content = new DaoContent(); 
-			JsonValue id = i.asJsonObject().get("id");
+			JsonObject itemObj = i.asJsonObject();
+			JsonValue id = itemObj.get("id");
 			if (id != null) {
 				content.setId("id-" + ((JsonString) id).getString());
 			}
-			JsonValue title = i.asJsonObject().get("title");
+			JsonValue title = itemObj.get("title");
 			if (title != null) {
 				content.setTitle(((JsonString) title).getString());
 			}
+			JsonObject body = itemObj.getJsonObject("body");
+			if (body != null) {
+				JsonObject storage = body.get("storage").asJsonObject();
+				if (storage != null) {
+					JsonValue val = storage.get("value");
+					if (val != null) {
+						content.setDescription(((JsonString) val).getString());
+					}
+				}
+			}
+
 			lst.add(content);
 		}
 
